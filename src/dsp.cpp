@@ -13,8 +13,13 @@ std::vector<float> prependSilence(const std::vector<float>& buf, size_t silenceL
 XMLNote convertToXMLNote(const Note& note) {
     XMLNote xmlNote;
     int octave = 0;
+    int alter = 0;
     std::string noteName;
 
+    // Convert note duration in s to duration in divisions
+    float noteDurationInSeconds = note.endTime - note.startTime;
+    xmlNote.duration = static_cast<int>(std::round((noteDurationInSeconds * (defaultBPM / 60.0) * PPQ) / PPQ) * PPQ);
+    xmlNote.type = note.type;
     // Extract note name and octave
     if (note.pitch == "Rest") {
         xmlNote.isRest = true;
@@ -22,20 +27,20 @@ XMLNote convertToXMLNote(const Note& note) {
     }
 
     for (char c : note.pitch) {
-        if (std::isalpha(c) || c == '#') {
+        if ((std::isalpha(c) == 1) && (c != 'b')) {
             noteName += c;
-        } else if (std::isdigit(c)) {
+        } 
+        else if (c == '#' || c == 'b') {
+            alter = c == '#' ? 1 : -1;
+        }
+        else if (std::isdigit(c)) {
             octave = octave * 10 + (c - '0');
         }
     }
 
-    // Convert note duration in s to duration in divisions
-    float noteDurationInSeconds = note.endTime - note.startTime;
-    xmlNote.duration = static_cast<int>(std::round((noteDurationInSeconds * (defaultBPM / 60.0) * PPQ) / PPQ) * PPQ);
-
     xmlNote.pitch = noteName;
     xmlNote.octave = octave;
-    xmlNote.type = note.type;
+    xmlNote.alter = alter;
     xmlNote.isRest = false;
 
     return xmlNote;
