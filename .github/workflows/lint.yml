@@ -8,6 +8,7 @@ on:
 
 permissions:
     contents: read
+    actions: write
 
 jobs:
     lint:
@@ -30,3 +31,4 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   SAVE_SUPER_LINTER_OUTPUT: true
+                  SAVE_SUPER_LINTER_SUMMARY: true
