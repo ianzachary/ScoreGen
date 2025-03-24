@@ -14,10 +14,7 @@ protected:
         "M001", 
         "Test Movement", 
         "GTest", 
-        "TestingSoftware", 
-        "rights", 
-        "rights type", 
-        "Testing"
+        "TestingSoftware"
     ) {}
 
     // Updated default parameters to match generate() logic

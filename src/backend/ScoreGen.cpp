@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <vector>
 #include "dsp.h"
 #include "generateMusicXML.h"
 #include "recordAudio.h"
@@ -12,9 +14,23 @@
 #define DEFAULT_TIME_SIG "4/4"
 #define DEFAULT_DIVISIONS 480
 
-void processAudio() {
+
+std::vector<std::string> splitString(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+void processAudio(const std::string& workTitle, const std::string& workNumber,
+    const std::string& movementNumber, const std::string& movementTitle,
+    const std::string& creatorName, const std::string& creatorType) {
+
     DSPResult res = dsp("temp.wav");
-    MusicXMLGenerator xmlGenerator;
+    MusicXMLGenerator xmlGenerator(workNumber, workNumber, movementNumber, movementTitle, creatorName, creatorType);
     bool success = xmlGenerator.generate(
         DEFAULT_OUT, 
         res.XMLNotes, 
@@ -35,12 +51,31 @@ void processAudio() {
 }
 
 int main() {
-    std::string command;
-    while (std::getline(std::cin, command)) {
-        if (command == "processAudio") {
-            processAudio();
-        } else {
-            std::cerr << "Unknown command: " << command << std::endl;
+    std::string input;
+    while (std::getline(std::cin, input)) {
+        if (input.find("processAudio") == 0) {
+            // Split the input line by '|'
+            std::vector<std::string> params = splitString(input, '|');
+
+            // Check if we have the correct number of parameters
+            if (params.size() == 7) {
+                std::string command = params[0];
+                std::string workTitle = params[1];
+                std::string workNumber = params[2];
+                std::string movementNumber = params[3];
+                std::string movementTitle = params[4];
+                std::string creatorName = params[5];
+                std::string creatorType = params[6];
+
+                // Call the processAudio function with extracted parameters
+                processAudio(workTitle, workNumber, movementNumber, movementTitle, creatorName, creatorType);
+            }
+            else {
+                std::cerr << "Invalid number of parameters. Expected 7 but got " << params.size() << "." << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Unknown command: " << input << std::endl;
         }
     }
     return 0;

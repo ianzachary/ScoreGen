@@ -18,10 +18,8 @@ class MusicXMLGenerator {
             const std::string& movementNumber = "MVMT_NUMBER",
             const std::string& movementTitle = "MVMNT_TITLE",
             const std::string& creatorName = "CREATOR_NAME",
-            const std::string& creatorType = "CREATOR_TYPE",
-            const std::string& rightsString = "RIGHTS_STRING",
-            const std::string& rightsType = "RIGHTS_TYPE",
-            const std::string& encodingSoftware = "ScoreGen");
+            const std::string& creatorType = "CREATOR_TYPE"
+        );
     
         ~MusicXMLGenerator();
     
@@ -31,7 +29,7 @@ class MusicXMLGenerator {
             const std::vector<XMLNote>& noteSequence,
             const std::string& clef,
             const int& clefLine,
-            const std::string& timeSignature,
+			const std::string& timeSignature,
             const int& keySignature,
             int divisions);
     
