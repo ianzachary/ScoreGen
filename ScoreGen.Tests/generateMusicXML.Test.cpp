@@ -154,7 +154,6 @@ TEST_F(MusicXMLGeneratorTest, FullGeneration) {
         noteSequence, 
         "G", 
         2,
-        "4/4", 
         0,
         4
     ));
@@ -175,7 +174,6 @@ TEST_F(MusicXMLGeneratorTest, EmptySequenceGeneration) {
         emptySequence, 
         "G", 
         2, 
-        "4/4", 
         0, 
         4
     ));

@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const exportMusicxmlBtn = document.getElementById('export-musicxml');
   const modal = document.getElementById('musicxmlModal');
   const modalClose = document.getElementById('modalClose');
+  const modalCancel = document.getElementById('modalCancel');
   const musicxmlForm = document.getElementById('musicxmlForm');
   
   /* === Playback Variables & Elements === */
@@ -307,7 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
     exportMusicxmlBtn.addEventListener('click', () => {
-        modal.style.display = 'block';
+      console.log('[Renderer] Export button clicked.');
+      modal.style.display = 'block';
     });
   
   /* --- Playback Event Listeners --- */
@@ -357,66 +359,71 @@ document.addEventListener('DOMContentLoaded', function() {
     playPauseButton.title = "Pause";
   });
 
-    /* --- MusicXML Form Submission --- */
+  /* --- MusicXML Form Submission --- */
   modalClose.addEventListener('click', () => {
+    console.log('[Renderer] Modal close button clicked.');
     modal.style.display = 'none';
   });
 
-    musicxmlForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const formData = {
-            workNumber: document.getElementById('workNumber').value,
-            workTitle: document.getElementById('workTitle').value,
-            movementNumber: document.getElementById('movementNumber').value,
-            movementTitle: document.getElementById('movementTitle').value,
-            creatorName: document.getElementById('creatorName').value,
-            creatorType: document.getElementById('creatorType').value
-        };
-
-        const command = `processAudio|${formData.workTitle}|${formData.workNumber}|${formData.movementNumber}|${formData.movementTitle}|${formData.creatorName}|${formData.creatorType}`;
-
-        if (!recordedAudioBlob) {
-            alert("No recording available to export!");
-            return;
+  modalCancel.addEventListener('click', () => {
+    console.log('[Renderer] Modal cancel button clicked.');
+    modal.style.display = 'none';
+  });
+  
+  musicxmlForm.addEventListener('submit', function (e) {
+    console.log('[Renderer] Modal submit button clicked.');
+    e.preventDefault();
+  
+    const formData = {
+      workNumber: document.getElementById('workNumber').value,
+      workTitle: document.getElementById('workTitle').value,
+      movementNumber: document.getElementById('movementNumber').value,
+      movementTitle: document.getElementById('movementTitle').value,
+      creatorName: document.getElementById('creatorName').value,
+      instrument: document.getElementById('instrumentInput').value,
+      timeSignature: document.getElementById('timeSignatureInput').value
+    };
+  
+    const command = `processAudio|${formData.workTitle}|${formData.workNumber}|${formData.movementNumber}|${formData.movementTitle}|${formData.creatorName}|${formData.instrument}|${formData.timeSignature}`;
+  
+    if (!recordedAudioBlob) {
+      alert("No recording available to export!");
+      return;
+    }
+  
+    const spinner = document.getElementById('spinnerOverlay');
+    if (spinner) spinner.style.display = 'flex';
+  
+    (async function () {
+      try {
+        const wavBlob = await convertBlobToWav(recordedAudioBlob);
+        const buffer = await wavBlob.arrayBuffer();
+  
+        await window.nodeAPI.saveTempWavFile(buffer);
+        await window.api.processAudio(command);
+  
+        const response = await fetch('../../output.xml');
+        if (!response.ok) {
+          throw new Error('Failed to fetch output.xml');
         }
-
-        const spinner = document.getElementById('spinnerOverlay');
-        if (spinner) spinner.style.display = 'flex';
-
-        console.log('[Renderer] Export button clicked.');
-
-        // Process the audio in an async function to allow for await
-        (async function () {
-            try {
-                const wavBlob = await convertBlobToWav(recordedAudioBlob);
-                const buffer = await wavBlob.arrayBuffer();
-
-                await window.nodeAPI.saveTempWavFile(buffer);
-                await window.api.processAudio(command);
-
-                const response = await fetch('../../output.xml');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch output.xml');
-                }
-
-                const musicxmlBlob = await response.blob();
-                const url = URL.createObjectURL(musicxmlBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'score.musicxml';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-            } catch (err) {
-                console.error("Error during export:", err);
-                alert("Failed to export MusicXML.");
-            } finally {
-                if (spinner) spinner.style.display = 'none';
-                modal.style.display = 'none';
-            }
-        })();
-    });
+  
+        const musicxmlBlob = await response.blob();
+        const url = URL.createObjectURL(musicxmlBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'score.musicxml';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Error during export:", err);
+        alert("Failed to export MusicXML.");
+      } finally {
+        if (spinner) spinner.style.display = 'none';
+        modal.style.display = 'none';
+      }
+    })();
+  });
 
 });

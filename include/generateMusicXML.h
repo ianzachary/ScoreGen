@@ -18,7 +18,8 @@ class MusicXMLGenerator {
             const std::string& movementNumber = "MVMT_NUMBER",
             const std::string& movementTitle = "MVMNT_TITLE",
             const std::string& creatorName = "CREATOR_NAME",
-            const std::string& creatorType = "CREATOR_TYPE"
+            const std::string& instrument = "INSTRUMENT",
+            const std::string& timeSignature = "4/4"
         );
     
         ~MusicXMLGenerator();
@@ -29,12 +30,13 @@ class MusicXMLGenerator {
             const std::vector<XMLNote>& noteSequence,
             const std::string& clef,
             const int& clefLine,
-			const std::string& timeSignature,
             const int& keySignature,
             int divisions);
     
     private:
         TFactory factory;
+        std::string instrument_;
+        std::string timeSignature_;
     
         // Create a score-part element for the part-list.
         TElement createScorePart(
